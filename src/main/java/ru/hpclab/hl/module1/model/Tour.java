@@ -16,6 +16,7 @@ import java.time.LocalDate;
 public class Tour {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
     @ManyToOne
