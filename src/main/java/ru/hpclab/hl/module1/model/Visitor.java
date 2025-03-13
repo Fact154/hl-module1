@@ -17,6 +17,15 @@ public class Visitor {
         DISCOUNT, FULL
     }
 
+    public Visitor() {
+    }
+
+    public Visitor(String fullName, int age, TicketType ticketType) {
+        this.fullName = fullName;
+        this.age = age;
+        this.ticketType = ticketType;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getFullName() { return fullName; }

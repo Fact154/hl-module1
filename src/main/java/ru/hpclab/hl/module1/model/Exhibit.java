@@ -11,6 +11,15 @@ public class Exhibit {
     private String era;
     private String description;
 
+    public Exhibit() {
+    }
+
+    public Exhibit(String name, String era, String description) {
+        this.name = name;
+        this.era = era;
+        this.description = description;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }

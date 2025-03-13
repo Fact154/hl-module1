@@ -18,6 +18,16 @@ public class Tour {
     private LocalDate date;
     private String guideName;
 
+    public Tour() {
+    }
+
+    public Tour(Exhibit exhibit, Visitor visitor, LocalDate date, String guideName) {
+        this.exhibit = exhibit;
+        this.visitor = visitor;
+        this.date = date;
+        this.guideName = guideName;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Exhibit getExhibit() { return exhibit; }

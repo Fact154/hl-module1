@@ -12,6 +12,25 @@ services:
       - "5432:5432"
     volumes:
       - museum_data:/var/lib/postgresql/data
+    health-check:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d museum" ]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com  # Укажите ваш email
+      PGADMIN_DEFAULT_PASSWORD: secret          # Укажите ваш пароль
+    ports:
+      - "5050:80"
+    depends_on:
+       postgres:
+        - condition: service_healthy  # Теперь `pgadmin` запустится только после готовности `postgres`
+
 
 volumes:
   museum_data:
