@@ -1,9 +1,18 @@
 package ru.hpclab.hl.module1.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 
 @Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name="Tour")
+
 public class Tour {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,14 +27,4 @@ public class Tour {
     private LocalDate date;
     private String guideName;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Exhibit getExhibit() { return exhibit; }
-    public void setExhibit(Exhibit exhibit) { this.exhibit = exhibit; }
-    public Visitor getVisitor() { return visitor; }
-    public void setVisitor(Visitor visitor) { this.visitor = visitor; }
-    public LocalDate getDate() { return date; }
-    public void setDate(LocalDate date) { this.date = date; }
-    public String getGuideName() { return guideName; }
-    public void setGuideName(String guideName) { this.guideName = guideName; }
 }
