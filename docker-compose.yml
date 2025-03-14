@@ -28,7 +28,7 @@ services:
       - postgres
   app:
     build: .
-    container_name: museum-app
+    container_name: .
     restart: always
     depends_on:
       - postgres
