@@ -1,7 +1,8 @@
 FROM gradle:8.5-jdk21-alpine AS builder
 WORKDIR /opt/app
 
-RUN apk add --no-cache dos2unix
+# Install dos2unix, Python, and pip
+RUN apk add --no-cache dos2unix python3 py3-pip
 
 COPY build.gradle settings.gradle ./
 COPY gradlew gradlew
@@ -13,6 +14,9 @@ RUN [-f gradle/wrapper/gradle-wrapper.jar ] || (echo "gradle-wrapper.jar не н
 RUN dos2unix gradlew && chmod +x gradlew
 
 RUN ./gradlew dependencies --no-daemon
+
+# Install faker using pip
+# RUN pip install faker
 
 COPY src src
 RUN ./gradlew clean build --no-daemon
