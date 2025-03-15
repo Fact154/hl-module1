@@ -15,7 +15,7 @@ export let options = {
 };
 
 export default function () {
-    let response = http.get('http://192.168.1.200:8080/grades');
+    let response = http.get('http://192.168.1.200:8080/visitor');
     check(response, {
         'status is 200': (r) => r.status === 200,
     });
