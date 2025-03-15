@@ -16,7 +16,7 @@ RUN dos2unix gradlew && chmod +x gradlew
 RUN ./gradlew dependencies --no-daemon
 
 # Install faker using pip
-# RUN pip install faker
+RUN pip install faker
 
 COPY src src
 RUN ./gradlew clean build --no-daemon

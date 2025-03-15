@@ -35,13 +35,13 @@ public class TourService {
     public List<Map.Entry<Long, Long>> getExhibitRating(int year, int month) {
         LocalDate start = LocalDate.of(year, month, 1);
         LocalDate end = start.plusMonths(1).minusDays(1);
-        List<Tour> tours = repository.findByDateBetween(start, end);
 
-        return tours.stream()
-                .collect(Collectors.groupingBy(tour -> tour.getExhibit().getId(), Collectors.counting()))
-                .entrySet()
-                .stream()
-                .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
-                .toList();
+        // Получаем рейтинг выставок через репозиторий с нативным SQL запросом
+        List<Object[]> result = repository.findExhibitRatingNative(start, end);
+
+        // Преобразуем результат в список Map.Entry
+        return result.stream()
+                .map(entry -> Map.entry((Long) entry[0], (Long) entry[1]))
+                .collect(Collectors.toList());
     }
 }
