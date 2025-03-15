@@ -4,6 +4,11 @@ WORKDIR /opt/app
 # Install dos2unix, Python, and pip
 RUN apk add --no-cache dos2unix python3 py3-pip
 
+# Install faker using pip
+RUN pip install faker --break-system-packages
+RUN pip install psycopg2-binary
+
+
 COPY build.gradle settings.gradle ./
 COPY gradlew gradlew
 COPY gradle gradle
@@ -15,8 +20,6 @@ RUN dos2unix gradlew && chmod +x gradlew
 
 RUN ./gradlew dependencies --no-daemon
 
-# Install faker using pip
-RUN pip install faker --break-system-packages
 
 COPY src src
 RUN ./gradlew clean build --no-daemon
