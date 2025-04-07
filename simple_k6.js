@@ -1,24 +1,36 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-export let options = {
-    executor: 'ramping-vus',
-    startVUs: 0,
-    stages: [
-        { duration: '30s', target: 50 },  // Ramp-up to 10 VUs over 30 seconds
-        { duration: '1m', target: 50 },     // Stay at 10 VUs for 1 minute
-        { duration: '30s', target: 2 },     // Ramp-down to 0 VUs over 30 seconds
-    ],
+export var options = {
+    scenarios: {
+        ramping_vus: {
+            executor: 'ramping-vus',
+            startVUs: 0,
+            stages: [
+                { duration: '30s', target: 50 },  // Ramp-up to 50 VUs over 30 seconds
+                { duration: '1m', target: 50 },   // Stay at 50 VUs for 1 minute
+                { duration: '30s', target: 2 },   // Ramp-down to 2 VUs over 30 seconds
+            ],
+        },
+    },
     thresholds: {
         http_req_duration: ['p(95)<500'],  // 95% of requests should be below 500ms
     },
 };
 
 export default function () {
+<<<<<<< Updated upstream
     let response = http.get('http://192.168.1.200:8080/visitor');
+=======
+    var response = http.get('http://192.168.1.200:8080/visitors');
+>>>>>>> Stashed changes
     check(response, {
         'status is 200': (r) => r.status === 200,
     });
 
     sleep(1);
 }
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
