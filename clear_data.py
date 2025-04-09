@@ -1,42 +1,35 @@
-import psycopg2
-from psycopg2 import sql
+import requests
 
-# Параметры подключения к базе данных
-DB_HOST = "localhost"  # Хост
-DB_NAME = "museum"     # Имя базы данных
-DB_USER = "admin"      # Имя пользователя
-DB_PASSWORD = "secret" # Пароль
+BASE_URL = "http://localhost:8080"
 
-# Создаем подключение к базе данных
-def create_connection():
-    return psycopg2.connect(
-        host=DB_HOST,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD
-    )
-
-# Очистка данных в таблицах и в flyway_schema_history
-def clear_data():
+def clear_db_via_api():
     try:
-        conn = create_connection()
-        cursor = conn.cursor()
-
-        # Очистка таблиц
-        tables = ['visitor', 'exhibit', 'tour']
-        for table in tables:
-            cursor.execute(sql.SQL("TRUNCATE TABLE {} CASCADE;").format(sql.Identifier(table)))
-            print(f"Таблица {table} очищена.")
-
-        # Очистка таблицы flyway_schema_history
-        cursor.execute("TRUNCATE TABLE flyway_schema_history;")
-        print("Таблица flyway_schema_history очищена.")
-
-        conn.commit()
-        cursor.close()
-        conn.close()
+        # Очищаем tours
+        response = requests.get(f"{BASE_URL}/tours")
+        if response.status_code == 200:
+            tours = response.json()
+            for tour in tours:
+                requests.delete(f"{BASE_URL}/tours/{tour['id']}")
+        print(f"[API] Таблица tours очищена")
+        
+        # Очищаем exhibits
+        response = requests.get(f"{BASE_URL}/exhibits")
+        if response.status_code == 200:
+            exhibits = response.json()
+            for exhibit in exhibits:
+                requests.delete(f"{BASE_URL}/exhibits/{exhibit['id']}")
+        print(f"[API] Таблица exhibits очищена")
+        
+        # Очищаем visitors
+        response = requests.get(f"{BASE_URL}/visitors")
+        if response.status_code == 200:
+            visitors = response.json()
+            for visitor in visitors:
+                requests.delete(f"{BASE_URL}/visitors/{visitor['id']}")
+        print(f"[API] Таблица visitors очищена")
+        
     except Exception as e:
-        print(f"Ошибка при очистке данных: {e}")
+        print(f"Ошибка при очистке базы данных: {e}")
 
 if __name__ == "__main__":
-    clear_data()
+    clear_db_via_api()

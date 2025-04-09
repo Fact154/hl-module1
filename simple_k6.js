@@ -19,18 +19,10 @@ export var options = {
 };
 
 export default function () {
-<<<<<<< Updated upstream
     let response = http.get('http://192.168.1.200:8080/visitor');
-=======
-    var response = http.get('http://192.168.1.200:8080/visitors');
->>>>>>> Stashed changes
     check(response, {
         'status is 200': (r) => r.status === 200,
     });
 
     sleep(1);
 }
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
