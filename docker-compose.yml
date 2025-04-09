@@ -15,18 +15,18 @@ services:
       - museum_data:/var/lib/postgresql/data
       - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d # Подключаем папку с миграциями
 
-  generate-data:
-    image: python:3.10-slim
-    container_name: generate-data
-    working_dir: /app
-    volumes:
-      - ./generate_data.py:/app/generate_data.py
-    command: >
-      sh -c "pip install psycopg2-binary && python generate_data.py"
-    depends_on:
-      - postgres
-    networks:
-      - app-network
+  # generate-data:
+  #   image: python:3.10-slim
+  #   container_name: generate-data
+  #   working_dir: /app
+  #   volumes:
+  #     - ./generate_data.py:/app/generate_data.py
+  #   command: >
+  #     sh -c "pip install psycopg2-binary && python generate_data.py"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - app-network
 
   #  clear-data:
   #    image: python:3.10-slim

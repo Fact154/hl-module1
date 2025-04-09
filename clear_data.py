@@ -10,7 +10,7 @@ def clear_db_via_api():
             tours = response.json()
             for tour in tours:
                 requests.delete(f"{BASE_URL}/tours/{tour['id']}")
-        print(f"[API] Таблица tours очищена")
+        print(f"Таблица tours очищена")
         
         # Очищаем exhibits
         response = requests.get(f"{BASE_URL}/exhibits")
@@ -18,7 +18,7 @@ def clear_db_via_api():
             exhibits = response.json()
             for exhibit in exhibits:
                 requests.delete(f"{BASE_URL}/exhibits/{exhibit['id']}")
-        print(f"[API] Таблица exhibits очищена")
+        print(f"Таблица exhibits очищена")
         
         # Очищаем visitors
         response = requests.get(f"{BASE_URL}/visitors")
@@ -26,7 +26,7 @@ def clear_db_via_api():
             visitors = response.json()
             for visitor in visitors:
                 requests.delete(f"{BASE_URL}/visitors/{visitor['id']}")
-        print(f"[API] Таблица visitors очищена")
+        print(f"Таблица visitors очищена")
         
     except Exception as e:
         print(f"Ошибка при очистке базы данных: {e}")
