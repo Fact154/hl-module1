@@ -1,4 +1,24 @@
 services:
+  db:
+    image: postgres:17-alpine
+    container_name: ${DB_CONTAINER_NAME}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
@@ -6,29 +26,49 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: "10"
     ports:
       - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - app-network
 
   app:
     build: .
     container_name: museum-app
-    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_TOMCAT_THREADS_MAX: ${TOMCAT_THREADS_MAX}
+      SERVER_TOMCAT_THREADS_MIN_SPARE: ${TOMCAT_THREADS_MIN_SPARE}
+      SPRING_JPA_SHOW_SQL: "false"
     ports:
       - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/${DBNAME}
-      SPRING_DATASOURCE_USERNAME: ${DBUSER}
-      SPRING_DATASOURCE_PASSWORD: ${DBPASSWORD}
-      SERVER_TOMCAT_MAX_THREADS: 100
-      SERVER_TOMCAT_MIN_SPARE_THREADS: 10
-      SPRING_JPA_SHOW_SQL: "false"
-    mem_limit: 512m
-    cpus: 0.5
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 512M
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
 volumes:
-  museum_data:
+  db-data:
+  pgadmin_data:
 
 networks:
   app-network:
