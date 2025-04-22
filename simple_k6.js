@@ -1,5 +1,8 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { randomSeed, randomIntBetween } from 'k6';
+
+randomSeed(1234); // Устанавливаем seed для генерации случайных чисел
 
 export var options = {
     scenarios: {
@@ -19,10 +22,28 @@ export var options = {
 };
 
 export default function () {
-    let response = http.get('http://192.168.1.200:8080/visitor');
-    check(response, {
-        'status is 200': (r) => r.status === 200,
-    });
+    // Определяем соотношение операций
+    const ratio = Math.random();
+    
+    if (ratio < 0.05) {
+        // 5% операций - вставка
+        let payload = JSON.stringify({
+            fullName: `John Doe ${__VU}-${__ITER}`,
+            age: Math.floor(Math.random() * 70) + 10,
+            ticketType: Math.random() > 0.5 ? 'FULL' : 'DISCOUNT'
+        });
+        let params = { headers: { 'Content-Type': 'application/json' } };
+        let response = http.post('http://localhost:8080/visitors', payload, params);
+        check(response, {
+            'status is 201': (r) => r.status === 201,
+        });
+    } else {
+        // 95% операций - чтение
+        let response = http.get('http://localhost:8080/visitors');
+        check(response, {
+            'status is 200': (r) => r.status === 200,
+        });
+    }
 
     sleep(1);
 }
