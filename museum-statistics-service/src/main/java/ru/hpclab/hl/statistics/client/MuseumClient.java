@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import ru.hpclab.hl.statistics.model.TourDTO;
-import ru.hpclab.hl.statistics.model.ExhibitDTO;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,11 +22,5 @@ public class MuseumClient {
         String url = String.format("%s/tours", museumUrl);
         TourDTO[] tours = restTemplate.getForObject(url, TourDTO[].class);
         return tours != null ? Arrays.asList(tours) : List.of();
-    }
-
-    public List<ExhibitDTO> getAllExhibits() {
-        String url = String.format("%s/exhibits", museumUrl);
-        ExhibitDTO[] exhibits = restTemplate.getForObject(url, ExhibitDTO[].class);
-        return exhibits != null ? Arrays.asList(exhibits) : List.of();
     }
 } 

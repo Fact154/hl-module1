@@ -10,6 +10,9 @@ public class TourDTO {
 
     public static class ExhibitInfo {
         private Long id;
+        private String name;
+        private String era;
+        private String description;
 
         public Long getId() {
             return id;
@@ -17,6 +20,30 @@ public class TourDTO {
 
         public void setId(Long id) {
             this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getEra() {
+            return era;
+        }
+
+        public void setEra(String era) {
+            this.era = era;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
     }
 
@@ -34,6 +61,10 @@ public class TourDTO {
 
     public Long getExhibitId() {
         return exhibit != null ? exhibit.getId() : null;
+    }
+
+    public String getExhibitName() {
+        return exhibit != null ? exhibit.getName() : null;
     }
 
     public LocalDate getDate() {

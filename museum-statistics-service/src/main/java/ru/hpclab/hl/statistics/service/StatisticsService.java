@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 import ru.hpclab.hl.statistics.client.MuseumClient;
 import ru.hpclab.hl.statistics.model.ExhibitRating;
 import ru.hpclab.hl.statistics.model.TourDTO;
-import ru.hpclab.hl.statistics.model.ExhibitDTO;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,39 +19,30 @@ public class StatisticsService {
     }
 
     public List<ExhibitRating> getExhibitRating(int year, int month) {
-        // 1. Получаем все туры и экспонаты
-        List<TourDTO> allTours = museumClient.getAllTours();
-        Map<Long, String> exhibitNames = museumClient.getAllExhibits().stream()
-                .collect(Collectors.toMap(
-                        ExhibitDTO::getId,
-                        ExhibitDTO::getName
-                ));
+        // Получаем все туры
+        List<TourDTO> tours = museumClient.getAllTours();
 
-        // 2. Определяем период для фильтрации
+        // Фильтруем туры по месяцу и году
         LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        LocalDate endDate = startDate.plusMonths(1).minusDays(1);
 
-        // 3. Фильтруем туры только за указанный месяц
-        List<TourDTO> toursInMonth = allTours.stream()
-                .filter(tour -> tour.getDate().getYear() == year &&
-                              tour.getDate().getMonthValue() == month)
-                .collect(Collectors.toList());
-
-        // 4. Подсчитываем количество посещений для каждого экспоната
-        Map<Long, Long> visitCounts = toursInMonth.stream()
+        // Группируем туры по ID экспоната и подсчитываем количество посещений
+        return tours.stream()
+                .filter(tour -> !tour.getDate().isBefore(startDate) && !tour.getDate().isAfter(endDate))
                 .collect(Collectors.groupingBy(
                         TourDTO::getExhibitId,
-                        Collectors.counting()
-                ));
-
-        // 5. Преобразуем в список ExhibitRating и сортируем по убыванию посещений
-        return visitCounts.entrySet().stream()
-                .map(entry -> new ExhibitRating(
-                        entry.getKey(),                    // ID экспоната
-                        exhibitNames.get(entry.getKey()),  // Название экспоната
-                        entry.getValue()                   // Количество посещений
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                tourList -> new ExhibitRating(
+                                        tourList.get(0).getExhibitId(),
+                                        tourList.get(0).getExhibitName(),
+                                        (long) tourList.size()
+                                )
+                        )
                 ))
-                .sorted((a, b) -> b.getVisitCount().compareTo(a.getVisitCount()))
+                .values()
+                .stream()
+                .sorted(Comparator.comparing(ExhibitRating::getVisitCount).reversed())
                 .collect(Collectors.toList());
     }
 } 
