@@ -14,4 +14,6 @@ public interface TourRepository extends JpaRepository<Tour, Long> {
             "GROUP BY t.exhibit_id " +
             "ORDER BY COUNT(t) DESC", nativeQuery = true)
     List<Object[]> findExhibitRatingNative(@Param("startDate") LocalDate start, @Param("endDate") LocalDate end);
+
+    List<Tour> findByDateBetween(LocalDate startDate, LocalDate endDate);
 }

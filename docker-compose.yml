@@ -7,39 +7,11 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
     ports:
       - "5432:5432"
     volumes:
       - museum_data:/var/lib/postgresql/data
-      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d # Подключаем папку с миграциями
-
-
- # generate-data:
-  #  image: python:3.10-slim
-  #  container_name: generate-data
-  #  working_dir: /app
-  #  volumes:
-  #    - ./generate_data.py:/app/generate_data.py
-  #  command: >
-  #    sh -c "pip install psycopg2-binary && python generate_data.py"
-  #  depends_on:
-  #    - postgres
-  #  networks:
-  #    - app-network
-
-  #  clear-data:
-  #    image: python:3.10-slim
-  #    container_name: clear-data
-  #    working_dir: /app
-  #    volumes:
-  #      - ./clear_data.py:/app/clear_data.py
-  #    command: >
-  #      sh -c "pip install psycopg2 && python clear_data.py"
-  #    depends_on:
-  #      - postgres
-  #    networks:
-  #      - app-network
+      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
 
   pgadmin:
     image: dpage/pgadmin4
@@ -53,7 +25,7 @@ services:
     depends_on:
       - postgres
 
-  app:
+  museum-app:
     build: .
     container_name: museum-app
     restart: always
@@ -62,17 +34,29 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SERVER_TOMCAT_MAX_THREADS: 100
-      SERVER_TOMCAT_MIN_SPARE_THREADS: 10
+      DB_HOST: museum-db
+      DB_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_SHOW_SQL: "false"
-   mem_limit: 512m
-   cpus: 0.5
+    mem_limit: 512m
+    cpus: 0.5
+
+  statistics-service:
+    build: ./museum-statistics-service
+    container_name: statistics-service
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      MUSEUM_URL: http://museum-app:8080
+    mem_limit: 512m
+    cpus: 0.5
 
 volumes:
   museum_data:
 
 networks:
-  app-network:
+  default:
+    driver: bridge

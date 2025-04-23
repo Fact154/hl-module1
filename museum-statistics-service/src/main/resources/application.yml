@@ -1,0 +1,15 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: statistics-service
+  jpa:
+    enabled: false
+  datasource:
+    enabled: false
+  flyway:
+    enabled: false
+
+museum:
+  url: ${MUSEUM_URL} 
