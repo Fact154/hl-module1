@@ -10,6 +10,19 @@ spring:
     enabled: false
   flyway:
     enabled: false
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 4
+        queue-capacity: 100
 
 museum:
-  url: ${MUSEUM_URL} 
+  url: ${MUSEUM_URL}
+
+statistics:
+  cache:
+    info: "Cache Statistics"
+    delay: 1000
+    print:
+      rate: 300000 
