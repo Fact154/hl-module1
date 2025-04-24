@@ -25,23 +25,33 @@ services:
     depends_on:
       - postgres
 
-  museum-app:
+  app:
     build: .
     container_name: museum-app
-    restart: always
-    depends_on:
-      - postgres
-    ports:
-      - "8080:8080"
     environment:
-      DB_HOST: museum-db
-      DB_PORT: 5432
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_TOMCAT_THREADS_MAX: ${TOMCAT_THREADS_MAX}
+      SERVER_TOMCAT_THREADS_MIN_SPARE: ${TOMCAT_THREADS_MIN_SPARE}
       SPRING_JPA_SHOW_SQL: "false"
-    mem_limit: 512m
-    cpus: 1
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 512M
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   statistics-service:
     build: ./museum-statistics-service
@@ -56,7 +66,9 @@ services:
 
 volumes:
   museum_data:
+  db-data:
+  pgadmin_data:
 
 networks:
-  default:
+  app-network:
     driver: bridge
