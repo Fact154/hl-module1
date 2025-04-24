@@ -3,11 +3,12 @@ import { check, sleep } from 'k6';
 import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import { Trend } from 'k6/metrics';
 
-const BASE_URL_GET = 'http://localhost:8081';
-const BASE_URL_POST = 'http://localhost:8080';
+const BASE_URL_GET = 'http://10.60.3.13:8081';
+const BASE_URL_POST = 'http://10.60.3.13:8080';
+
 
 // Константы для настройки тестов
-const TARGET_VUS = 400;
+const TARGET_VUS = 100;
 
 // Метрики
 const readHeavyLatency = new Trend('read_heavy_latency');
@@ -82,11 +83,10 @@ export const options = {
 
 // Генерация случайного "визитора"
 function generateVisitor() {
-  const names = ['Anna', 'Boris', 'Clara', 'David', 'Eva', 'Felix'];
   return {
-    name: names[randomIntBetween(0, names.length - 1)],
-    age: randomIntBetween(18, 80),
-    ticketType: ['adult', 'child', 'senior'][randomIntBetween(0, 2)]
+    fullName: `User ${__VU}-${__ITER}`,
+    age: Math.floor(Math.random() * 70) + 10,
+    ticketType: Math.random() > 0.5 ? 'FULL' : 'DISCOUNT',
   };
 }
 
@@ -110,12 +110,19 @@ export function mixedTraffic() {
       JSON.stringify(visitor),
       { headers: { 'Content-Type': 'application/json' } }
     );
-    check(res, { 'POST /visitors статус 200': (r) => r.status === 200 });
+    check(res, { 
+      'POST /visitors статус 200': (r) => r.status === 200,
+      'POST /visitors тело ответа': (r) => r.json() !== null,
+      'POST /visitors ID': (r) => r.json().id !== undefined
+    });
+    if (res.status !== 200) {
+      console.error(`Ошибка при создании посетителя: ${res.status}`);
+    }
     postTrend.add(res.timings.duration);
   }
 
   // Добавляем в общую метрику
   scenario.metric.add(res.timings.duration);
 
-  sleep(0.1);
+  sleep(0.01);
 }

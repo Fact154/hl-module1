@@ -63,6 +63,8 @@ services:
       MUSEUM_URL: http://museum-app:8080
     mem_limit: 512m
     cpus: 1
+    networks:
+      - app-network
 
 volumes:
   museum_data:
