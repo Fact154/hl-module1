@@ -1,5 +1,8 @@
 package ru.hpclab.hl.module1.service;
 
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -7,6 +10,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.stream.*;
 
+@Slf4j
+@Service
 public final class ObservabilityService {
     private static final ConcurrentMap<String, TimingStats> metrics = new ConcurrentHashMap<>();
     private static final long CLEANUP_THRESHOLD_MS = TimeUnit.MINUTES.toMillis(40);
@@ -25,6 +30,36 @@ public final class ObservabilityService {
         );
         cleanOldData();
         return snapshot;
+    }
+
+    @Scheduled(fixedRate = 10000) // Каждые 10 секунд
+    public void logMetrics() {
+        MetricsSnapshot snapshot = getMetricsAndClean();
+        
+        log.info("=== Metrics Report === {}", snapshot.timestamp);
+        
+        log.info("Last 10 seconds:");
+        logMetricsMap(snapshot.last10s);
+        
+        log.info("Last 30 seconds:");
+        logMetricsMap(snapshot.last30s);
+        
+        log.info("Last 1 minute:");
+        logMetricsMap(snapshot.last1m);
+        
+        log.info("=== End Metrics Report ===");
+    }
+
+    private void logMetricsMap(Map<String, MetricStats> metricsMap) {
+        if (metricsMap.isEmpty()) {
+            log.info("  No metrics recorded");
+            return;
+        }
+        
+        metricsMap.forEach((name, stats) -> {
+            log.info("  {} - count: {}, avg: {:.2f}ms, min: {}ms, max: {}ms",
+                    name, stats.count, stats.avgMs, stats.minMs, stats.maxMs);
+        });
     }
 
     private static Map<String, MetricStats> collectStats(long periodMs) {
@@ -63,6 +98,15 @@ public final class ObservabilityService {
             this.last30s = Collections.unmodifiableMap(last30s);
             this.last1m = Collections.unmodifiableMap(last1m);
             this.timestamp = DateTimeFormatter.ISO_INSTANT.format(instant);
+        }
+         @Override
+        public String toString() {
+        return "MetricsSnapshot{" +
+                "timestamp='" + timestamp + '\'' +
+                ", last10s=" + last10s +
+                ", last30s=" + last30s +
+                ", last1m=" + last1m +
+                '}';
         }
     }
 
