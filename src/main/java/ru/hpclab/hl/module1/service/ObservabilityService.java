@@ -57,12 +57,16 @@ public final class ObservabilityService {
         }
         
         metricsMap.forEach((name, stats) -> {
-            log.info("  {} - count: {}, avg: {}s, min: {}s, max: {}s",
-                    name,
-                    stats.count,
-                    stats.count == 0 ? "0.000" : String.format("%.3f", stats.avgMs / 1000.0),
-                    stats.count == 0 ? "0.000" : String.format("%.3f", stats.minMs / 1000.0),
-                    stats.count == 0 ? "0.000" : String.format("%.3f", stats.maxMs / 1000.0));
+            if (stats.count == 0) {
+                log.info("  {} - count: 0, avg: 0.000s, min: 0s, max: 0s", name);
+            } else {
+                log.info("  {} - count: {}, avg: {}s, min: {}s, max: {}s",
+                        name, 
+                        stats.count, 
+                        String.format("%.5f", stats.avgMs),
+                        String.format("%.5f", stats.minMs),
+                        String.format("%.5f", stats.maxMs);
+            }
         });
     }
 
