@@ -48,7 +48,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
+          cpus: '1'
           memory: 512M
     extra_hosts:
       - "host.docker.internal:host-gateway"
