@@ -1,5 +1,7 @@
 package ru.hpclab.hl.statistics.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class StatisticsCache {
+    private static final Logger logger = LogManager.getLogger(StatisticsCache.class);
+    
     private final Map<String, List<ExhibitRating>> exhibitRatingCache = new ConcurrentHashMap<>();
     private final Map<String, List<TourDTO>> toursCache = new ConcurrentHashMap<>();
 
@@ -52,10 +56,10 @@ public class StatisticsCache {
     @Async
     @Scheduled(fixedRateString = "${statistics.cache.print.rate:300000}")
     public void printCacheStatistics() throws InterruptedException {
-        System.out.println(Thread.currentThread().getName() + " - " + infoString + " - " + 
-                "Exhibit Rating Cache Size: " + exhibitRatingCache.size() + " - " +
-                "Tours Cache Size: " + toursCache.size() + " - " +
-                "Total Cache Entries: " + (exhibitRatingCache.size() + toursCache.size()));
+        logger.info("{} - Time: {} - Total Cache Entries: {}", 
+            infoString,
+            java.time.LocalDateTime.now(),
+            exhibitRatingCache.size() + toursCache.size());
         Thread.sleep(delay);
     }
 } 
