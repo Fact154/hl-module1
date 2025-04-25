@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hpclab.hl.statistics.model.ExhibitRating;
 import ru.hpclab.hl.statistics.service.StatisticsService;
+import ru.hpclab.hl.statistics.service.ObservabilityService;
 import java.util.List;
 
 @RestController
@@ -19,6 +20,11 @@ public class StatisticsController {
     public ResponseEntity<List<ExhibitRating>> getExhibitRating(
             @RequestParam int year,
             @RequestParam int month) {
-        return ResponseEntity.ok(statisticsService.getExhibitRating(year, month));
+        long start = System.currentTimeMillis();
+        try {
+            return ResponseEntity.ok(statisticsService.getExhibitRating(year, month));
+        } finally {
+            ObservabilityService.recordTiming("controller.getExhibitRating", System.currentTimeMillis() - start);
+        }
     }
 } 

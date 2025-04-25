@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hpclab.hl.module1.model.Tour;
 import ru.hpclab.hl.module1.service.TourService;
+import ru.hpclab.hl.module1.service.ObservabilityService;
 import java.util.List;
 
 @RestController
@@ -17,23 +18,43 @@ public class TourController {
 
     @PostMapping
     public ResponseEntity<Tour> createTour(@RequestBody Tour tour) {
-        return ResponseEntity.ok(tourService.addTour(tour));
+        long start = System.currentTimeMillis();
+        try {
+            return ResponseEntity.ok(tourService.addTour(tour));
+        } finally {
+            ObservabilityService.recordTiming("tour.create", System.currentTimeMillis() - start);
+        }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Tour> getTour(@PathVariable Long id) {
-        Tour tour = tourService.getTour(id);
-        return tour != null ? ResponseEntity.ok(tour) : ResponseEntity.notFound().build();
+        long start = System.currentTimeMillis();
+        try {
+            Tour tour = tourService.getTour(id);
+            return tour != null ? ResponseEntity.ok(tour) : ResponseEntity.notFound().build();
+        } finally {
+            ObservabilityService.recordTiming("tour.get", System.currentTimeMillis() - start);
+        }
     }
 
     @GetMapping
     public ResponseEntity<List<Tour>> getAllTours() {
-        return ResponseEntity.ok(tourService.getAllTours());
+        long start = System.currentTimeMillis();
+        try {
+            return ResponseEntity.ok(tourService.getAllTours());
+        } finally {
+            ObservabilityService.recordTiming("tour.getAll", System.currentTimeMillis() - start);
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTour(@PathVariable Long id) {
-        tourService.deleteTour(id);
-        return ResponseEntity.noContent().build();
+        long start = System.currentTimeMillis();
+        try {
+            tourService.deleteTour(id);
+            return ResponseEntity.noContent().build();
+        } finally {
+            ObservabilityService.recordTiming("tour.delete", System.currentTimeMillis() - start);
+        }
     }
 }

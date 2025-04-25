@@ -19,30 +19,35 @@ public class StatisticsService {
     }
 
     public List<ExhibitRating> getExhibitRating(int year, int month) {
-        // Получаем все туры
-        List<TourDTO> tours = museumClient.getAllTours();
+        long start = System.currentTimeMillis();
+        try {
+            // Получаем все туры
+            List<TourDTO> tours = museumClient.getAllTours();
 
-        // Фильтруем туры по месяцу и году
-        LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = startDate.plusMonths(1).minusDays(1);
+            // Фильтруем туры по месяцу и году
+            LocalDate startDate = LocalDate.of(year, month, 1);
+            LocalDate endDate = startDate.plusMonths(1).minusDays(1);
 
-        // Группируем туры по ID экспоната и подсчитываем количество посещений
-        return tours.stream()
-                .filter(tour -> !tour.getDate().isBefore(startDate) && !tour.getDate().isAfter(endDate))
-                .collect(Collectors.groupingBy(
-                        TourDTO::getExhibitId,
-                        Collectors.collectingAndThen(
-                                Collectors.toList(),
-                                tourList -> new ExhibitRating(
-                                        tourList.get(0).getExhibitId(),
-                                        tourList.get(0).getExhibitName(),
-                                        (long) tourList.size()
-                                )
-                        )
-                ))
-                .values()
-                .stream()
-                .sorted(Comparator.comparing(ExhibitRating::getVisitCount).reversed())
-                .collect(Collectors.toList());
+            // Группируем туры по ID экспоната и подсчитываем количество посещений
+            return tours.stream()
+                    .filter(tour -> !tour.getDate().isBefore(startDate) && !tour.getDate().isAfter(endDate))
+                    .collect(Collectors.groupingBy(
+                            TourDTO::getExhibitId,
+                            Collectors.collectingAndThen(
+                                    Collectors.toList(),
+                                    tourList -> new ExhibitRating(
+                                            tourList.get(0).getExhibitId(),
+                                            tourList.get(0).getExhibitName(),
+                                            (long) tourList.size()
+                                    )
+                            )
+                    ))
+                    .values()
+                    .stream()
+                    .sorted(Comparator.comparing(ExhibitRating::getVisitCount).reversed())
+                    .collect(Collectors.toList());
+        } finally {
+            ObservabilityService.recordTiming("statistics.getExhibitRating", System.currentTimeMillis() - start);
+        }
     }
 } 
