@@ -21,12 +21,6 @@ public class StatisticsCache {
     @Value("${statistics.cache.info:Cache Statistics}")
     private String infoString;
 
-    private final int delay;
-
-    public StatisticsCache(@Value("${statistics.cache.delay:1000}") int delay) {
-        this.delay = delay;
-    }
-
     public void putExhibitRating(String key, List<ExhibitRating> ratings) {
         long start = System.currentTimeMillis();
         try {
@@ -83,14 +77,13 @@ public class StatisticsCache {
 
     @Async
     @Scheduled(fixedRateString = "${statistics.cache.print.rate:300000}")
-    public void printCacheStatistics() throws InterruptedException {
+    public void printCacheStatistics() {
         long start = System.currentTimeMillis();
         try {
             log.info("{} - Time: {} - Total Cache Entries: {}", 
                 infoString,
                 java.time.LocalDateTime.now(),
                 exhibitRatingCache.size() + toursCache.size());
-            Thread.sleep(delay);
         } finally {
             ObservabilityService.recordTiming("cache.printStatistics", System.currentTimeMillis() - start);
         }
