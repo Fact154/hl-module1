@@ -63,9 +63,9 @@ public final class ObservabilityService {
                 log.info("  {} - count: {}, avg: {}s, min: {}s, max: {}s",
                         name, 
                         stats.count, 
-                        String.format("%.5f", stats.avgMs),
-                        String.format("%.5f", stats.minMs),
-                        String.format("%.5f", stats.maxMs);
+                        String.format("%.5f", stats.avgMs / 1000.0),
+                        String.format("%.5f", stats.minMs / 1000.0),
+                        String.format("%.5f", stats.maxMs / 1000.0));
             }
         });
     }
