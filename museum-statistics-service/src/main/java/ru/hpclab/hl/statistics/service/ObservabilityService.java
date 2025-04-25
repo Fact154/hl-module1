@@ -56,18 +56,18 @@ public final class ObservabilityService {
             return;
         }
         
-        metricsMap.forEach((name, stats) -> {
-            if (stats.count == 0) {
-                log.info("  {} - count: 0, avg: 0.000s, min: 0s, max: 0s", name);
-            } else {
+        metricsMap.entrySet().stream()
+            .filter(entry -> entry.getValue().count > 0)
+            .forEach(entry -> {
+                String name = entry.getKey();
+                MetricStats stats = entry.getValue();
                 log.info("  {} - count: {}, avg: {}s, min: {}s, max: {}s",
                         name, 
                         stats.count, 
-                        String.format("%.5f", stats.avgMs / 1.0),
-                        String.format("%.5f", stats.minMs / 1.0),
-                        String.format("%.5f", stats.maxMs / 1.0));
-            }
-        });
+                        String.format("%.5f", stats.avgMs / 1000.0),
+                        String.format("%.5f", stats.minMs / 1000.0),
+                        String.format("%.5f", stats.maxMs / 1000.0));
+            });
     }
 
     private static Map<String, MetricStats> collectStats(long periodMs) {
