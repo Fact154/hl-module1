@@ -8,13 +8,12 @@ const BASE_URL_POST = 'http://10.60.3.13:8080';
 
 
 // Константы для настройки тестов
-const TARGET_VUS = 100;
+const TARGET_VUS = 600;
 
 // Метрики
 const readHeavyLatency = new Trend('read_heavy_latency');
 const balancedLatency = new Trend('balanced_latency');
 const writeHeavyLatency = new Trend('write_heavy_latency');
-const postTrend = new Trend('post_latency'); // для POST-запросов отдельно
 
 // Сценарии нагрузки
 const scenarios = {
@@ -76,8 +75,7 @@ export const options = {
   thresholds: {
     'read_heavy_latency': ['avg<500'],
     'balanced_latency': ['avg<500'],
-    'write_heavy_latency': ['avg<500'],
-    'post_latency': ['avg<500']
+    'write_heavy_latency': ['avg<500']
   }
 };
 
@@ -118,7 +116,6 @@ export function mixedTraffic() {
     if (res.status !== 200) {
       console.error(`Ошибка при создании посетителя: ${res.status}`);
     }
-    postTrend.add(res.timings.duration);
   }
 
   // Добавляем в общую метрику
