@@ -1,44 +1,48 @@
 services:
-  postgres:
-    image: postgres:15
-    container_name: museum-db
-    restart: always
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - museum_data:/var/lib/postgresql/data
-      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
-    networks:
-      - app-network
+  # postgres:
+  #   image: postgres:15
+  #   container_name: museum-db
+  #   restart: always
+  #   environment:
+  #     POSTGRES_DB: ${POSTGRES_DB}
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - museum_data:/var/lib/postgresql/data
+  #     - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - app-network
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-    networks:
-      - app-network
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   container_name: pgadmin
+  #   restart: always
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+  #   ports:
+  #     - "5050:80"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - app-network
 
   app:
+    image: fact154/museum-app:latest
     build: .
     container_name: museum-app
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
+      # DB_HOST: postgres
+      # DB_PORT: 5432
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      # SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -49,8 +53,8 @@ services:
       - "8080:8080"
     networks:
       - app-network
-    depends_on:
-      - postgres
+    # depends_on:
+    #   - postgres
     deploy:
       resources:
         limits:
@@ -59,6 +63,7 @@ services:
 
 
   statistics-service:
+    image: fact154/statistics-service:latest
     build: ./museum-statistics-service
     container_name: statistics-service
     restart: always
@@ -74,7 +79,7 @@ services:
       - app
 
 volumes:
-  museum_data:
+  # museum_data:
   db-data:
   pgadmin_data:
 
