@@ -25,4 +25,4 @@ statistics:
     info: "Cache Statistics"
     delay: 1000
     print:
-      rate: 300000 
+      rate: 0 

@@ -32,23 +32,23 @@ public final class ObservabilityService {
         return snapshot;
     }
 
-    @Scheduled(fixedRate = 10000) // Каждые 10 секунд
-    public void logMetrics() {
-        MetricsSnapshot snapshot = getMetricsAndClean();
+    // @Scheduled(fixedRate = 10000) // Каждые 10 секунд
+    // public void logMetrics() {
+    //     MetricsSnapshot snapshot = getMetricsAndClean();
         
-        log.info("=== Metrics Report === {}", snapshot.timestamp);
+    //     log.info("=== Metrics Report === {}", snapshot.timestamp);
         
-        log.info("Last 10 seconds:");
-        logMetricsMap(snapshot.last10s);
+    //     log.info("Last 10 seconds:");
+    //     logMetricsMap(snapshot.last10s);
         
-        log.info("Last 30 seconds:");
-        logMetricsMap(snapshot.last30s);
+    //     log.info("Last 30 seconds:");
+    //     logMetricsMap(snapshot.last30s);
         
-        log.info("Last 1 minute:");
-        logMetricsMap(snapshot.last1m);
+    //     log.info("Last 1 minute:");
+    //     logMetricsMap(snapshot.last1m);
         
-        log.info("=== End Metrics Report ===");
-    }
+    //     log.info("=== End Metrics Report ===");
+    // }
 
     private void logMetricsMap(Map<String, MetricStats> metricsMap) {
         if (metricsMap.isEmpty()) {
@@ -107,14 +107,15 @@ public final class ObservabilityService {
             this.last1m = Collections.unmodifiableMap(last1m);
             this.timestamp = DateTimeFormatter.ISO_INSTANT.format(instant);
         }
-         @Override
+
+        @Override
         public String toString() {
-        return "MetricsSnapshot{" +
-                "timestamp='" + timestamp + '\'' +
-                ", last10s=" + last10s +
-                ", last30s=" + last30s +
-                ", last1m=" + last1m +
-                '}';
+            return "MetricsSnapshot{" +
+                    "timestamp='" + timestamp + '\'' +
+                    ", last10s=" + last10s +
+                    ", last30s=" + last30s +
+                    ", last1m=" + last1m +
+                    '}';
         }
     }
 
@@ -164,4 +165,4 @@ public final class ObservabilityService {
             this.maxMs = maxMs;
         }
     }
-} 
+}

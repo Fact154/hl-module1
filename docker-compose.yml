@@ -1,42 +1,45 @@
 services:
-  # postgres:
-  #   image: postgres:15
-  #   container_name: museum-db
-  #   restart: always
-  #   environment:
-  #     POSTGRES_DB: ${POSTGRES_DB}
-  #     POSTGRES_USER: ${POSTGRES_USER}
-  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - museum_data:/var/lib/postgresql/data
-  #     - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
+  postgres:
+    image: postgres:15
+    container_name: museum-db
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
 
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   container_name: pgadmin
-  #   restart: always
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-  #   ports:
-  #     - "5050:80"
-  #   depends_on:
-  #     - postgres
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - app-network
 
   app:
     build: .
     container_name: museum-app
     environment:
-      DB_HOST: ${REMOTE_DB_HOST}
-      DB_PORT: ${REMOTE_DB_PORT}
-      POSTGRES_DB: ${REMOTE_DB_NAME}
-      POSTGRES_USER: ${REMOTE_DB_USER}
-      POSTGRES_PASSWORD: ${REMOTE_DB_PASSWORD}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${REMOTE_DB_HOST}:${REMOTE_DB_PORT}/${REMOTE_DB_NAME}
-      SPRING_DATASOURCE_USERNAME: ${REMOTE_DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${REMOTE_DB_PASSWORD}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SERVER_TOMCAT_MAX_THREADS: ${TOMCAT_THREADS_MAX}
       SERVER_TOMCAT_MIN_SPARE_THREADS: ${TOMCAT_THREADS_MIN_SPARE}
@@ -45,6 +48,8 @@ services:
       - "8080:8080"
     networks:
       - app-network
+    depends_on:
+      - postgres
     deploy:
       resources:
         limits:

@@ -3,7 +3,7 @@ package ru.hpclab.hl.statistics.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
+// import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import ru.hpclab.hl.statistics.model.ExhibitRating;
 import ru.hpclab.hl.statistics.model.TourDTO;
@@ -76,7 +76,7 @@ public class StatisticsCache {
     }
 
     @Async
-    @Scheduled(fixedRateString = "${statistics.cache.print.rate:300000}")
+    // @Scheduled(fixedRateString = "${statistics.cache.print.rate:300000}")
     public void printCacheStatistics() {
         long start = System.currentTimeMillis();
         try {

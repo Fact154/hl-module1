@@ -32,23 +32,23 @@ public final class ObservabilityService {
         return snapshot;
     }
 
-    @Scheduled(fixedRate = 10000) // Каждые 10 секунд
-    public void logMetrics() {
-        MetricsSnapshot snapshot = getMetricsAndClean();
+    // @Scheduled(fixedRate = 10000) // Каждые 10 секунд
+    // public void logMetrics() {
+    //     MetricsSnapshot snapshot = getMetricsAndClean();
         
-        log.info("=== Metrics Report === {}", snapshot.timestamp);
+    //     log.info("=== Metrics Report === {}", snapshot.timestamp);
         
-        log.info("Last 10 seconds:");
-        logMetricsMap(snapshot.last10s);
+    //     log.info("Last 10 seconds:");
+    //     logMetricsMap(snapshot.last10s);
         
-        log.info("Last 30 seconds:");
-        logMetricsMap(snapshot.last30s);
+    //     log.info("Last 30 seconds:");
+    //     logMetricsMap(snapshot.last30s);
         
-        log.info("Last 1 minute:");
-        logMetricsMap(snapshot.last1m);
+    //     log.info("Last 1 minute:");
+    //     logMetricsMap(snapshot.last1m);
         
-        log.info("=== End Metrics Report ===");
-    }
+    //     log.info("=== End Metrics Report ===");
+    // }
 
     private void logMetricsMap(Map<String, MetricStats> metricsMap) {
         if (metricsMap.isEmpty()) {
@@ -56,18 +56,18 @@ public final class ObservabilityService {
             return;
         }
         
-        metricsMap.entrySet().stream()
-            .filter(entry -> entry.getValue().count > 0)
-            .forEach(entry -> {
-                String name = entry.getKey();
-                MetricStats stats = entry.getValue();
+        metricsMap.forEach((name, stats) -> {
+            if (stats.count == 0) {
+                log.info("  {} - count: 0, avg: 0.000s, min: 0s, max: 0s", name);
+            } else {
                 log.info("  {} - count: {}, avg: {}s, min: {}s, max: {}s",
                         name, 
                         stats.count, 
                         String.format("%.5f", stats.avgMs / 1000.0),
                         String.format("%.5f", stats.minMs / 1000.0),
                         String.format("%.5f", stats.maxMs / 1000.0));
-            });
+            }
+        });
     }
 
     private static Map<String, MetricStats> collectStats(long periodMs) {
@@ -106,6 +106,12 @@ public final class ObservabilityService {
             this.last30s = Collections.unmodifiableMap(last30s);
             this.last1m = Collections.unmodifiableMap(last1m);
             this.timestamp = DateTimeFormatter.ISO_INSTANT.format(instant);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("MetricsSnapshot{last10s=%d, last30s=%d, last1m=%d, timestamp='%s'}",
+                    last10s.size(), last30s.size(), last1m.size(), timestamp);
         }
     }
 
