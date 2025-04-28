@@ -11,8 +11,6 @@ import ru.hpclab.hl.module1.model.Visitor;
 import ru.hpclab.hl.module1.model.Exhibit;
 import ru.hpclab.hl.module1.model.Tour;
 
-import java.util.List;
-
 @Service
 public class KafkaConsumerService {
     private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerService.class);
@@ -35,9 +33,10 @@ public class KafkaConsumerService {
     @KafkaListener(topics = "${spring.kafka.topic}", groupId = "${spring.kafka.consumer.group-id}")
     public void listen(String message) {
         try {
-            logger.info("Raw Kafka message: {}", message);
+            logger.debug("Raw Kafka message received: {}", message);
             KafkaMessage kafkaMessage = objectMapper.readValue(message, KafkaMessage.class);
-            logger.info("Parsed payload: {}", kafkaMessage.getPayload());
+            logger.debug("Parsed Kafka message: entity={}, operation={}", 
+                kafkaMessage.getEntity(), kafkaMessage.getOperation());
 
             switch (kafkaMessage.getEntity().toUpperCase()) {
                 case "VISITOR":
@@ -50,7 +49,7 @@ public class KafkaConsumerService {
                     handleTourMessage(kafkaMessage);
                     break;
                 default:
-                    logger.info("Ignoring message for entity: {}", kafkaMessage.getEntity());
+                    logger.debug("Ignoring message for entity: {}", kafkaMessage.getEntity());
             }
         } catch (Exception e) {
             logger.error("Error processing Kafka message: {}", message, e);
@@ -63,25 +62,15 @@ public class KafkaConsumerService {
                 String payloadJson = objectMapper.writeValueAsString(kafkaMessage.getPayload());
                 Visitor newVisitor = objectMapper.readValue(payloadJson, Visitor.class);
                 visitorService.addVisitor(newVisitor);
-                logger.info("Added visitor: {}", newVisitor);
-                break;
-            case "GET":
-                if (kafkaMessage.getPayload() == null) {
-                    List<Visitor> visitors = visitorService.getAllVisitors();
-                    logger.info("Retrieved all visitors: {}", visitors);
-                } else {
-                    String payloadStr = kafkaMessage.getPayload().toString();
-                    Visitor foundVisitor = visitorService.getVisitor(Long.parseLong(payloadStr));
-                    logger.info("Retrieved visitor: {}", foundVisitor);
-                }
+                logger.debug("Added visitor: {}", newVisitor);
                 break;
             case "DEL":
                 String payloadStr = kafkaMessage.getPayload().toString();
                 visitorService.deleteVisitor(Long.parseLong(payloadStr));
-                logger.info("Deleted visitor with ID: {}", payloadStr);
+                logger.debug("Deleted visitor with ID: {}", payloadStr);
                 break;
             default:
-                logger.warn("Unknown operation for VISITOR: {}", kafkaMessage.getOperation());
+                logger.debug("Unknown operation for VISITOR: {}", kafkaMessage.getOperation());
         }
     }
 
@@ -91,25 +80,15 @@ public class KafkaConsumerService {
                 String payloadJson = objectMapper.writeValueAsString(kafkaMessage.getPayload());
                 Exhibit newExhibit = objectMapper.readValue(payloadJson, Exhibit.class);
                 exhibitService.addExhibit(newExhibit);
-                logger.info("Added exhibit: {}", newExhibit);
-                break;
-            case "GET":
-                if (kafkaMessage.getPayload() == null) {
-                    List<Exhibit> exhibits = exhibitService.getAllExhibits();
-                    logger.info("Retrieved all exhibits: {}", exhibits);
-                } else {
-                    String payloadStr = kafkaMessage.getPayload().toString();
-                    Exhibit foundExhibit = exhibitService.getExhibit(Long.parseLong(payloadStr));
-                    logger.info("Retrieved exhibit: {}", foundExhibit);
-                }
+                logger.debug("Added exhibit: {}", newExhibit);
                 break;
             case "DEL":
                 String payloadStr = kafkaMessage.getPayload().toString();
                 exhibitService.deleteExhibit(Long.parseLong(payloadStr));
-                logger.info("Deleted exhibit with ID: {}", payloadStr);
+                logger.debug("Deleted exhibit with ID: {}", payloadStr);
                 break;
             default:
-                logger.warn("Unknown operation for EXHIBIT: {}", kafkaMessage.getOperation());
+                logger.debug("Unknown operation for EXHIBIT: {}", kafkaMessage.getOperation());
         }
     }
 
@@ -119,25 +98,15 @@ public class KafkaConsumerService {
                 String payloadJson = objectMapper.writeValueAsString(kafkaMessage.getPayload());
                 Tour newTour = objectMapper.readValue(payloadJson, Tour.class);
                 tourService.addTour(newTour);
-                logger.info("Added tour: {}", newTour);
-                break;
-            case "GET":
-                if (kafkaMessage.getPayload() == null) {
-                    List<Tour> tours = tourService.getAllTours();
-                    logger.info("Retrieved all tours: {}", tours);
-                } else {
-                    String payloadStr = kafkaMessage.getPayload().toString();
-                    Tour foundTour = tourService.getTour(Long.parseLong(payloadStr));
-                    logger.info("Retrieved tour: {}", foundTour);
-                }
+                logger.debug("Added tour: {}", newTour);
                 break;
             case "DEL":
                 String payloadStr = kafkaMessage.getPayload().toString();
                 tourService.deleteTour(Long.parseLong(payloadStr));
-                logger.info("Deleted tour with ID: {}", payloadStr);
+                logger.debug("Deleted tour with ID: {}", payloadStr);
                 break;
             default:
-                logger.warn("Unknown operation for TOUR: {}", kafkaMessage.getOperation());
+                logger.debug("Unknown operation for TOUR: {}", kafkaMessage.getOperation());
         }
     }
 } 
