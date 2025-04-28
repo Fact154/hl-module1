@@ -1,32 +1,32 @@
 services:
-  postgres:
-    image: postgres:15
-    container_name: museum-db
-    restart: always
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
-    networks:
-      - app-network
+  # postgres:
+  #   image: postgres:15
+  #   container_name: museum-db
+  #   restart: always
+  #   environment:
+  #     POSTGRES_DB: ${POSTGRES_DB}
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - app-network
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-    networks:
-      - app-network
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   container_name: pgadmin
+  #   restart: always
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+  #   ports:
+  #     - "5050:80"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - app-network
 
   app:
     build: .
@@ -48,8 +48,8 @@ services:
       - "8080:8080"
     networks:
       - app-network
-    depends_on:
-      - postgres
+    # depends_on:
+    #   - postgres
     deploy:
       resources:
         limits:
