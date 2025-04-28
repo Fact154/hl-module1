@@ -170,44 +170,47 @@ def create_grouped_tours(tours):
                 
                 create_tour(exhibit["id"], visitor["id"], date, guide_name)
 
-async def create_async_tours(tours):
+async def create_first10_tours():
     async with aiohttp.ClientSession() as session:
         # Получаем первых 10 посетителей
-        async with session.get(f"{BASE_URL}/visitors") as response:
-            if response.status != 200:
-                print("Ошибка при получении списка посетителей")
+        async with session.get(f"{BASE_URL}/visitors") as visitors_response:
+            if visitors_response.status != 200:
+                print(f"Ошибка при получении списка посетителей: {visitors_response.status}")
                 return
-            visitors = await response.json()
-            first_10_visitors = visitors[:10]
+            visitors = await visitors_response.json()
+            visitors = visitors[:10]  # Берем первых 10
 
         # Получаем первых 10 экспонатов
-        async with session.get(f"{BASE_URL}/exhibits") as response:
-            if response.status != 200:
-                print("Ошибка при получении списка экспонатов")
+        async with session.get(f"{BASE_URL}/exhibits") as exhibits_response:
+            if exhibits_response.status != 200:
+                print(f"Ошибка при получении списка экспонатов: {exhibits_response.status}")
                 return
-            exhibits = await response.json()
-            first_10_exhibits = exhibits[:10]
+            exhibits = await exhibits_response.json()
+            exhibits = exhibits[:10]  # Берем первые 10
 
-        if not first_10_visitors or not first_10_exhibits:
-            print("Ошибка: Недостаточно посетителей или экспонатов!")
+        if not visitors or not exhibits:
+            print("Недостаточно данных для создания туров.")
             return
 
-        # Создаем туры для всех пар посетитель-экспонат
+        # Создаем туры: для каждой пары посетитель-экспонат
         tasks = []
-        for visitor in first_10_visitors:
-            for exhibit in first_10_exhibits:
+        for visitor in visitors:
+            for exhibit in exhibits:
                 date = fake.date_between(start_date="-1y", end_date="today").strftime("%Y-%m-%d")
                 guide_name = fake.name() if random.random() > 0.5 else None
                 tasks.append(
                     create_tour_async(session, exhibit["id"], visitor["id"], date, guide_name)
                 )
 
+        # Запускаем все задачи параллельно
         results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Выводим результат
         for result in results:
             if isinstance(result, Exception):
                 print(f"Ошибка при создании тура: {result}")
-            elif result:
-                print(f"Тур создан: {result}")
+            else:
+                print(f"Тур создан успешно: {result}")
 
 async def create_tour_async(session, exhibit_id, visitor_id, date, guide_name):
     # Получаем данные посетителя и экспоната
@@ -250,7 +253,7 @@ def main():
     parser.add_argument('--visitors', type=int, help='Количество посетителей для генерации')
     parser.add_argument('--exhibits', type=int, help='Количество экспонатов для генерации')
     parser.add_argument('--tours', type=int, help='Количество экскурсий для генерации')
-    parser.add_argument('--async-tours', type=int, help='Количество асинхронных туров для первых 10 посетителей и экспонатов')
+    parser.add_argument('--first10-tours', action='store_true', help='Создать туры для первых 10 посетителей и экспонатов')
     
     args = parser.parse_args()
         
@@ -260,8 +263,8 @@ def main():
         insert_exhibits(args.exhibits)
     if args.tours:
         create_grouped_tours(args.tours)
-    if args.async_tours:
-        asyncio.run(create_async_tours(args.async_tours))
+    if args.first10_tours:
+        asyncio.run(create_first10_tours())
         
     print("Генерация данных завершена.")
 
