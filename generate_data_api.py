@@ -35,30 +35,13 @@ def create_exhibit(name, era, description):
     return response.json() if response.status_code == 200 else None
 
 def create_tour(exhibit_id, visitor_id, date, guide_name):
-    # Получаем данные посетителя и экспоната
-    visitor_response = requests.get(f"{BASE_URL}/visitors/{visitor_id}")
-    exhibit_response = requests.get(f"{BASE_URL}/exhibits/{exhibit_id}")
-    
-    if visitor_response.status_code != 200 or exhibit_response.status_code != 200:
-        print("Ошибка при получении данных посетителя или экспоната")
-        return None
-        
-    visitor = visitor_response.json()
-    exhibit = exhibit_response.json()
-    
     # Формируем данные для отправки
     tour_data = {
         "exhibit": {
-            "id": exhibit_id,
-            "name": exhibit["name"],
-            "era": exhibit["era"],
-            "description": exhibit["description"]
+            "id": exhibit_id
         },
         "visitor": {
-            "id": visitor_id,
-            "fullName": visitor["fullName"],
-            "age": visitor["age"],
-            "ticketType": visitor["ticketType"]
+            "id": visitor_id
         },
         "date": date,
         "guideName": guide_name
