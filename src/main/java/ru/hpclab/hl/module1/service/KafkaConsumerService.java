@@ -58,8 +58,7 @@ public class KafkaConsumerService {
     private void handleVisitorMessage(KafkaMessage kafkaMessage) throws JsonProcessingException {
         switch (kafkaMessage.getOperation().toUpperCase()) {
             case "POST":
-                String payloadStr = objectMapper.writeValueAsString(kafkaMessage.getPayload());
-                Visitor newVisitor = objectMapper.readValue(payloadStr, Visitor.class);
+                Visitor newVisitor = objectMapper.readValue(kafkaMessage.getPayload(), Visitor.class);
                 visitorService.addVisitor(newVisitor);
                 logger.info("Added visitor: {}", newVisitor);
                 break;
@@ -84,8 +83,7 @@ public class KafkaConsumerService {
     private void handleExhibitMessage(KafkaMessage kafkaMessage) throws JsonProcessingException {
         switch (kafkaMessage.getOperation().toUpperCase()) {
             case "POST":
-                String payloadStr = objectMapper.writeValueAsString(kafkaMessage.getPayload());
-                Exhibit newExhibit = objectMapper.readValue(payloadStr, Exhibit.class);
+                Exhibit newExhibit = objectMapper.readValue(kafkaMessage.getPayload(), Exhibit.class);
                 exhibitService.addExhibit(newExhibit);
                 logger.info("Added exhibit: {}", newExhibit);
                 break;
@@ -110,8 +108,7 @@ public class KafkaConsumerService {
     private void handleTourMessage(KafkaMessage kafkaMessage) throws JsonProcessingException {
         switch (kafkaMessage.getOperation().toUpperCase()) {
             case "POST":
-                String payloadStr = objectMapper.writeValueAsString(kafkaMessage.getPayload());
-                Tour newTour = objectMapper.readValue(payloadStr, Tour.class);
+                Tour newTour = objectMapper.readValue(kafkaMessage.getPayload(), Tour.class);
                 tourService.addTour(newTour);
                 logger.info("Added tour: {}", newTour);
                 break;
