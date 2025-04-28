@@ -8,5 +8,5 @@ public class KafkaMessage {
     
     private String operation;     // Тип операции (POST, PUT, DEL, CLEAR)
     
-    private String payload;       // Данные для обработки в формате JSON
+    private Object payload;       // Данные для обработки в формате JSON
 } 
