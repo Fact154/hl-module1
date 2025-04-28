@@ -56,28 +56,14 @@ public class KafkaConsumerService {
     }
 
     private void handleVisitorMessage(KafkaMessage kafkaMessage) throws JsonProcessingException {
-        switch (kafkaMessage.getOperation().toUpperCase()) {
-            case "POST":
-                Visitor newVisitor = objectMapper.readValue(kafkaMessage.getPayload(), Visitor.class);
-                visitorService.addVisitor(newVisitor);
-                logger.info("Added visitor: {}", newVisitor);
-                break;
-            case "GET":
-                if (kafkaMessage.getPayload() == null || kafkaMessage.getPayload().isEmpty()) {
-                    List<Visitor> visitors = visitorService.getAllVisitors();
-                    logger.info("Retrieved all visitors: {}", visitors);
-                } else {
-                    Visitor foundVisitor = visitorService.getVisitor(Long.parseLong(kafkaMessage.getPayload()));
-                    logger.info("Retrieved visitor: {}", foundVisitor);
-                }
-                break;
-            case "DEL":
-                visitorService.deleteVisitor(Long.parseLong(kafkaMessage.getPayload()));
-                logger.info("Deleted visitor with ID: {}", kafkaMessage.getPayload());
-                break;
-            default:
-                logger.warn("Unknown operation for VISITOR: {}", kafkaMessage.getOperation());
-        }
+        String payload = kafkaMessage.getPayload();
+        logger.info("Raw payload: {}", payload);
+
+        String unescapedPayload = payload.replace("\\\"", "\"");
+        Visitor newVisitor = objectMapper.readValue(unescapedPayload, Visitor.class);
+
+        visitorService.addVisitor(newVisitor);
+        logger.info("Added visitor: {}", newVisitor);
     }
 
     private void handleExhibitMessage(KafkaMessage kafkaMessage) throws JsonProcessingException {
