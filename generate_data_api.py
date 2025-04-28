@@ -41,10 +41,15 @@ def create_tour(exhibit_id, visitor_id, date, guide_name):
     
     if visitor_response.status_code != 200 or exhibit_response.status_code != 200:
         print("Ошибка при получении данных посетителя или экспоната")
+        print(f"Статус посетителя: {visitor_response.status_code}, Статус экспоната: {exhibit_response.status_code}")
         return None
         
     visitor = visitor_response.json()
     exhibit = exhibit_response.json()
+    
+    if not visitor or not exhibit:
+        print(f"Ошибка: данные не получены. Посетитель: {visitor}, Экспонат: {exhibit}")
+        return None
     
     # Формируем данные для отправки
     tour_data = {
@@ -64,14 +69,12 @@ def create_tour(exhibit_id, visitor_id, date, guide_name):
         "guideName": guide_name
     }
     
-    response = requests.post(
-        f"{BASE_URL}/tours",
-        json=tour_data
-    )
+    response = requests.post(f"{BASE_URL}/tours", json=tour_data)
     
     if response.status_code != 200:
-        print(f"Ошибка {response.status_code}: {response.text}")
+        print(f"Ошибка при создании экскурсии: {response.status_code}, {response.text}")
     return response.json() if response.status_code == 200 else None
+
 
 def insert_visitors(n):
     for _ in range(n):
@@ -127,13 +130,15 @@ def create_grouped_tours(tours):
     # Получаем список посетителей и экспонатов
     visitors_response = requests.get(f"{BASE_URL}/visitors")
     exhibits_response = requests.get(f"{BASE_URL}/exhibits")
-    
+
     if visitors_response.status_code != 200 or exhibits_response.status_code != 200:
         print("Ошибка при получении списка посетителей или экспонатов")
         return
         
     visitors = visitors_response.json()
     exhibits = exhibits_response.json()
+    print(visitors)
+    print(exhibits)
     
     if not visitors or not exhibits:
         print("Ошибка: Сначала добавьте посетителей и экспонаты!")
@@ -141,8 +146,9 @@ def create_grouped_tours(tours):
 
     # Вычисляем количество посетителей и экспонатов в каждом туре
     visitors_per_tour = len(visitors) // tours
-    exhibits_per_tour = len(exhibits) // tours
     
+    exhibits_per_tour = len(exhibits) // tours
+
     # Создаем туры
     for tour_num in range(tours):
         # Вычисляем индексы для текущего тура
