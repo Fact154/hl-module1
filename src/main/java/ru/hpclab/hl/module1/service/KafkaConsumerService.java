@@ -56,20 +56,36 @@ public class KafkaConsumerService {
     }
 
     private void handleVisitorMessage(KafkaMessage kafkaMessage) throws JsonProcessingException {
-        String payload = kafkaMessage.getPayload();
-        logger.info("Raw payload: {}", payload);
-
-        String unescapedPayload = payload.replace("\\\"", "\"");
-        Visitor newVisitor = objectMapper.readValue(unescapedPayload, Visitor.class);
-
-        visitorService.addVisitor(newVisitor);
-        logger.info("Added visitor: {}", newVisitor);
+        switch (kafkaMessage.getOperation().toUpperCase()) {
+            case "POST":
+                String payloadStr = objectMapper.writeValueAsString(kafkaMessage.getPayload());
+                Visitor newVisitor = objectMapper.readValue(payloadStr, Visitor.class);
+                visitorService.addVisitor(newVisitor);
+                logger.info("Added visitor: {}", newVisitor);
+                break;
+            case "GET":
+                if (kafkaMessage.getPayload() == null || kafkaMessage.getPayload().isEmpty()) {
+                    List<Visitor> visitors = visitorService.getAllVisitors();
+                    logger.info("Retrieved all visitors: {}", visitors);
+                } else {
+                    Visitor foundVisitor = visitorService.getVisitor(Long.parseLong(kafkaMessage.getPayload()));
+                    logger.info("Retrieved visitor: {}", foundVisitor);
+                }
+                break;
+            case "DEL":
+                visitorService.deleteVisitor(Long.parseLong(kafkaMessage.getPayload()));
+                logger.info("Deleted visitor with ID: {}", kafkaMessage.getPayload());
+                break;
+            default:
+                logger.warn("Unknown operation for VISITOR: {}", kafkaMessage.getOperation());
+        }
     }
 
     private void handleExhibitMessage(KafkaMessage kafkaMessage) throws JsonProcessingException {
         switch (kafkaMessage.getOperation().toUpperCase()) {
             case "POST":
-                Exhibit newExhibit = objectMapper.readValue(kafkaMessage.getPayload(), Exhibit.class);
+                String payloadStr = objectMapper.writeValueAsString(kafkaMessage.getPayload());
+                Exhibit newExhibit = objectMapper.readValue(payloadStr, Exhibit.class);
                 exhibitService.addExhibit(newExhibit);
                 logger.info("Added exhibit: {}", newExhibit);
                 break;
@@ -94,7 +110,8 @@ public class KafkaConsumerService {
     private void handleTourMessage(KafkaMessage kafkaMessage) throws JsonProcessingException {
         switch (kafkaMessage.getOperation().toUpperCase()) {
             case "POST":
-                Tour newTour = objectMapper.readValue(kafkaMessage.getPayload(), Tour.class);
+                String payloadStr = objectMapper.writeValueAsString(kafkaMessage.getPayload());
+                Tour newTour = objectMapper.readValue(payloadStr, Tour.class);
                 tourService.addTour(newTour);
                 logger.info("Added tour: {}", newTour);
                 break;
