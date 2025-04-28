@@ -170,7 +170,7 @@ def create_grouped_tours(tours):
                 
                 create_tour(exhibit["id"], visitor["id"], date, guide_name)
 
-async def create_async_tours():
+async def create_async_tours(tours):
     async with aiohttp.ClientSession() as session:
         # Получаем первых 10 посетителей
         async with session.get(f"{BASE_URL}/visitors") as response:
@@ -250,7 +250,7 @@ def main():
     parser.add_argument('--visitors', type=int, help='Количество посетителей для генерации')
     parser.add_argument('--exhibits', type=int, help='Количество экспонатов для генерации')
     parser.add_argument('--tours', type=int, help='Количество экскурсий для генерации')
-    parser.add_argument('--async-tours', action='store_true', help='Создать асинхронные туры для первых 10 посетителей и экспонатов')
+    parser.add_argument('--async-tours', type=int, help='Количество асинхронных туров для первых 10 посетителей и экспонатов')
     
     args = parser.parse_args()
         
@@ -261,7 +261,7 @@ def main():
     if args.tours:
         create_grouped_tours(args.tours)
     if args.async_tours:
-        asyncio.run(create_async_tours())
+        asyncio.run(create_async_tours(args.async_tours))
         
     print("Генерация данных завершена.")
 
