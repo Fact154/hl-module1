@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class KafkaMessage {
-    private String entity;        // Тип объекта (USER, DOCUMENT, TRANSACTION и т.д.)
+    private String entity;        // Тип объекта (VISITOR, EXHIBIT, TOUR)
     
-    private String operation;     // Тип операции (POST, PUT, DEL, CLEAR)
+    private String operation;     // Тип операции (POST, GET, DEL)
     
-    private String payload;       // Данные для обработки в формате JSON
+    private Object payload;       // Данные для обработки (может быть объектом или строкой)
 } 
