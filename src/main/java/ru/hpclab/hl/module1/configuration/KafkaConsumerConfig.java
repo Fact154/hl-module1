@@ -1,3 +1,4 @@
+/*
 package ru.hpclab.hl.module1.configuration;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -59,3 +60,4 @@ public class KafkaConsumerConfig {
         return factory;
     }
 } 
+*/ 

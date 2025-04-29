@@ -19,6 +19,9 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
+        env:
+          - name: SERVER_PORT
+            value: "8081" 
         envFrom:
         - configMapRef:
             name: museum-config
@@ -32,4 +35,4 @@ spec:
             memory: "1Gi"
             cpu: "500m"
       imagePullSecrets:
-      - name: dockerhub-secret 
+      - name: dockerhub-secret
