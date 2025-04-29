@@ -23,7 +23,7 @@ spec:
         - configMapRef:
             name: museum-config
         - secretRef:
-            name: db-secret
+            name: museum-secrets
         resources:
           requests:
             memory: "512Mi"
