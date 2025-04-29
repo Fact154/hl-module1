@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: main-service
+  template:
+    metadata:
+      labels:
+        app: main-service
+    spec:
+      containers:
+      - name: main-service
+        image: fact154/main-service:latest
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: app-config
+        - secretRef:
+            name: app-secrets
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m" 
