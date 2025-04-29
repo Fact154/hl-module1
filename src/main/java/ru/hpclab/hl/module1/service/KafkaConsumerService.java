@@ -31,11 +31,9 @@ public class KafkaConsumerService {
     }
 
     @KafkaListener(topics = "${spring.kafka.topic}", groupId = "${spring.kafka.consumer.group-id}")
-    public void listen(String message) {
+    public void listen(KafkaMessage kafkaMessage) {
         try {
-            logger.debug("Raw Kafka message received: {}", message);
-            KafkaMessage kafkaMessage = objectMapper.readValue(message, KafkaMessage.class);
-            logger.debug("Parsed Kafka message: entity={}, operation={}", 
+            logger.debug("Received Kafka message: entity={}, operation={}", 
                 kafkaMessage.getEntity(), kafkaMessage.getOperation());
 
             switch (kafkaMessage.getEntity().toUpperCase()) {
@@ -52,7 +50,7 @@ public class KafkaConsumerService {
                     logger.debug("Ignoring message for entity: {}", kafkaMessage.getEntity());
             }
         } catch (Exception e) {
-            logger.error("Error processing Kafka message: {}", message, e);
+            logger.error("Error processing Kafka message: {}", kafkaMessage, e);
         }
     }
 
