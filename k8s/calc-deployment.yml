@@ -1,31 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: main-service
+  name: museum-stats
+  namespace: var9
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: main-service
+      app: museum-stats
   template:
     metadata:
       labels:
-        app: main-service
+        app: museum-stats
     spec:
       containers:
-      - name: main-service
-        image: fact154/main-service:latest
+      - name: museum-stats
+        image: fact154/stats-service:latest
+        imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - containerPort: 8081
         envFrom:
         - configMapRef:
-            name: app-config
+            name: museum-config
         - secretRef:
-            name: app-secrets
+            name: db-secret
         resources:
           requests:
             memory: "512Mi"
             cpu: "250m"
           limits:
             memory: "1Gi"
-            cpu: "500m" 
+            cpu: "500m"
+      imagePullSecrets:
+      - name: dockerhub-secret 
