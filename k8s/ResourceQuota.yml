@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: var9-quota
+  namespace: var9
+spec:
+  hard:
+    cpu: "6"
+    memory: "6Gi"

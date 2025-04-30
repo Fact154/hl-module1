@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: museum-main
+  namespace: var9
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: museum-main
+  template:
+    metadata:
+      labels:
+        app: museum-main
+    spec:
+      hostAliases:
+      - ip: "10.60.3.27"
+        hostnames:
+        - "hl22.zil"
+      - ip: "10.60.3.28"
+        hostnames:
+        - "hl23.zil"
+      containers:
+      - name: museum-main
+        image: fact154/main-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: museum-config
+        - secretRef:
+            name: museum-secrets
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "1"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+      imagePullSecrets:
+      - name: dockerhub-secret
