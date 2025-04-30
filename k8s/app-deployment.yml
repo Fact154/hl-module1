@@ -4,12 +4,13 @@ metadata:
   name: museum-main
   namespace: var9
 spec:
-  replicas: 3
+  replicas: 1
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 2
-      maxUnavailable: 1
+      maxSurge: 5
   selector:
     matchLabels:
       app: museum-main
@@ -27,7 +28,7 @@ spec:
         - "hl23.zil"
       containers:
       - name: museum-main
-        image: fact154/main-service:latest
+        image: fact154/main-service:v1.0
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
