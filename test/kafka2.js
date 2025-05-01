@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
 import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
-import { Trend } from 'k6/metrics';
+import { Trend, Rate } from 'k6/metrics';
 import { Writer, SCHEMA_TYPE_STRING, SchemaRegistry } from 'k6/x/kafka';
 
 // Kafka setup
@@ -19,6 +19,10 @@ const SERVICE_URL = 'http://10.60.3.13:30001';
 const readHeavyLatency = new Trend('read_heavy_latency');
 const balancedLatency = new Trend('balanced_latency');
 const writeHeavyLatency = new Trend('write_heavy_latency');
+
+// Метрики для времени отклика и процента неудачных запросов
+const responseTime = new Trend('response_time');
+const failureRate = new Rate('failure_rate');
 
 const scenarios = {
   read_heavy: {
@@ -74,12 +78,23 @@ export const options = {
       ],
       exec: 'mixedTraffic',
       env: { TEST_SCENARIO: 'write_heavy' }
-    }
+    },
+    circuit_breaker_test: {
+      executor: 'ramping-vus',
+      startVUs: 1,
+      stages: [
+        { duration: '1m', target: 100 }, // Увеличение до 100 пользователей
+        { duration: '3m', target: 100 }, // Поддержание нагрузки
+        { duration: '1m', target: 0 },   // Снижение нагрузки
+      ],
+    },
   },
   thresholds: {
     'read_heavy_latency': ['avg<500'],
     'balanced_latency': ['avg<500'],
-    'write_heavy_latency': ['avg<500']
+    'write_heavy_latency': ['avg<500'],
+    'response_time': ['p(95)<500'], // 95% запросов должны быть быстрее 500 мс
+    'failure_rate': ['rate<0.1'],   // Менее 10% запросов должны завершаться неудачей
   }
 };
 
@@ -141,6 +156,20 @@ function generateVisitor() {
   
     scenario.metric.add(res.timings.duration);
   
+    // Запись метрик
+    responseTime.add(res.timings.duration);
+    failureRate.add(res.status !== 200);
+  
     sleep(0.1);
+  }
+  
+  export default function () {
+    const res = http.get('http://main-service-internal:8080/crash');
+    
+    // Запись метрик
+    responseTime.add(res.timings.duration);
+    failureRate.add(res.status !== 200);
+  
+    sleep(1);
   }
   
