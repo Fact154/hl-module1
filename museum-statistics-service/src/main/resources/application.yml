@@ -16,6 +16,9 @@ spring:
         core-size: 2
         max-size: 4
         queue-capacity: 100
+  redis:
+    host: localhost
+    port: 6379
 
 museum:
   url: ${MUSEUM_URL}
