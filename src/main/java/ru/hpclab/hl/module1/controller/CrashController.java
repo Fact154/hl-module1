@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/core")
+@RequestMapping("/core")
 public class CrashController {
 
     @GetMapping("/crash")

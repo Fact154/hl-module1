@@ -1,26 +1,28 @@
 package ru.hpclab.hl.module1.controller;
 
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.DescribeClusterResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/api/core")
+@RequestMapping("/core")
 public class HealthController {
 
     private static final Logger log = LoggerFactory.getLogger(HealthController.class);
-    private final KafkaAdmin kafkaAdmin;
     private final JdbcTemplate jdbcTemplate;
+    private final AdminClient kafkaAdminClient;
 
-    public HealthController(KafkaAdmin kafkaAdmin, JdbcTemplate jdbcTemplate) {
-        this.kafkaAdmin = kafkaAdmin;
+    public HealthController(JdbcTemplate jdbcTemplate, AdminClient kafkaAdminClient) {
         this.jdbcTemplate = jdbcTemplate;
+        this.kafkaAdminClient = kafkaAdminClient;
     }
 
     @GetMapping("/health")
@@ -37,11 +39,8 @@ public class HealthController {
 
     private boolean checkKafkaConnection() {
         try {
-            if (kafkaAdmin == null) {
-                log.error("KafkaAdmin is not initialized");
-                return false;
-            }
-            kafkaAdmin.describeCluster().nodes().get(3, TimeUnit.SECONDS);
+            DescribeClusterResult result = kafkaAdminClient.describeCluster();
+            result.nodes().get(3, TimeUnit.SECONDS);
             log.info("Kafka connection is healthy");
             return true;
         } catch (Exception e) {

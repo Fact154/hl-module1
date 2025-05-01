@@ -164,7 +164,7 @@ function generateVisitor() {
   }
   
   export default function () {
-    const res = http.get('http://main-service-internal:8080/crash');
+    const res = http.get('http://main-service-internal:30000/core/crash');
     
     // Запись метрик
     responseTime.add(res.timings.duration);

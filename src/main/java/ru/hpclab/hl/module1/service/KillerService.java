@@ -1,6 +1,7 @@
 package ru.hpclab.hl.module1.service;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry; //для повторных запросов
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,11 +20,12 @@ public class KillerService {
 
     @Scheduled(fixedRate = 10000)
     @CircuitBreaker(name = "coreServiceCircuitBreaker", fallbackMethod = "fallback")
+    @Retry(name = "coreServiceRetry") //для повторных запросов
     public void killRandomPod() {
         try {
             log.info("Attempting to crash a random pod");
             webClient.get()
-                    .uri("/crash")
+                    .uri("/core/crash")
                     .retrieve()
                     .bodyToMono(Void.class)
                     .block();
