@@ -1,5 +1,6 @@
 package ru.hpclab.hl.module1.service;
 
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -17,6 +18,7 @@ public class KillerService {
     }
 
     @Scheduled(fixedRate = 10000)
+    @Retry(name = "coreServiceRetry", fallbackMethod = "fallback")
     public void killRandomPod() {
         try {
             log.info("Attempting to crash a random pod");
@@ -28,5 +30,9 @@ public class KillerService {
         } catch (Exception e) {
             log.error("Failed to crash pod", e);
         }
+    }
+
+    public void fallback(Exception e) {
+        log.error("Fallback: Service unavailable", e);
     }
 }
