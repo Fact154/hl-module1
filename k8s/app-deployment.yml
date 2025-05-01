@@ -11,6 +11,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 5
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: museum-main

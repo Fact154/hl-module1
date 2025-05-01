@@ -9,7 +9,7 @@ spec:
     targetPort: 8080
     nodePort: 30000
   selector:
-    app: main-servi
+    app: museum-main
 ---
 apiVersion: v1
 kind: Service
@@ -33,4 +33,4 @@ spec:
   - port: 8080
     targetPort: 8080
   selector:
-    app: main-service 
+    app: museum-main
