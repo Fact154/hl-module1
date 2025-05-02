@@ -7,4 +7,6 @@ FROM openjdk:21-jdk-slim
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 8081
+RUN curl https://repo.maven.apache.org
+
 ENTRYPOINT ["java", "-jar", "app.jar"] 
