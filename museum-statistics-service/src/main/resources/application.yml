@@ -16,11 +16,6 @@ spring:
         core-size: 2
         max-size: 4
         queue-capacity: 100
-
-museum:
-  url: ${MUSEUM_URL}
-
-spring:
   data:
     redis:
       host: redis-service.var9.svc.cluster.local
@@ -31,6 +26,9 @@ spring:
           max-active: 10
           max-idle: 5
           min-idle: 1
+
+museum:
+  url: ${MUSEUM_URL}
 
 statistics:
   cache:
