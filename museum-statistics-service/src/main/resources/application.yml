@@ -20,9 +20,18 @@ spring:
 museum:
   url: ${MUSEUM_URL}
 
+spring:
+  data:
+    redis:
+      host: redis-service.var9.svc.cluster.local
+      port: 6379
+      timeout: 5000
+      jedis:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 1
+
 statistics:
   cache:
-    info: "Cache Statistics"
-    delay: 1000
-    print:
-      rate: 0 
+    ttl-seconds: 1800
