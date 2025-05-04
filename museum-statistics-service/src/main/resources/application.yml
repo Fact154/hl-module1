@@ -32,4 +32,4 @@ museum:
 
 statistics:
   cache:
-    ttl-seconds: 1800
+    ttl-seconds: 86400
