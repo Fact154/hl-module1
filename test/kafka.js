@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { sleep, check } from 'k6';
 import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
-import { Trend } from 'k6/metrics';
+import { Trend, Rate } from 'k6/metrics';
 import { Writer } from 'k6/x/kafka';
 
 // Kafka setup
@@ -16,6 +16,8 @@ const SERVICE_URL = 'http://10.60.3.13:8081';
 const readHeavyLatency = new Trend('read_heavy_latency');
 const balancedLatency = new Trend('balanced_latency');
 const writeHeavyLatency = new Trend('write_heavy_latency');
+const responseTime = new Trend('response_time');
+const failureRate = new Rate('failure_rate');
 
 const scenarios = {
   read_heavy: {
@@ -38,6 +40,12 @@ const scenarios = {
     duration: '1m',
     target: 150,
     metric: writeHeavyLatency
+  },
+  circuit_breaker: {
+    name: 'Circuit Breaker Test',
+    duration: '5m',
+    target: 100,
+    metric: responseTime
   }
 };
 
@@ -71,12 +79,23 @@ export const options = {
       ],
       exec: 'mixedTraffic',
       env: { TEST_SCENARIO: 'write_heavy' }
-    }
+    },
+    circuit_breaker_test: {
+      executor: 'ramping-vus',
+      startVUs: 1,
+      stages: [
+        { duration: '1m', target: 100 }, // Увеличение до 100 пользователей
+        { duration: '3m', target: 100 }, // Поддержание нагрузки
+        { duration: '1m', target: 0 },   // Снижение нагрузки
+      ],
+    },
   },
   thresholds: {
     'read_heavy_latency': ['avg<500'],
     'balanced_latency': ['avg<500'],
-    'write_heavy_latency': ['avg<500']
+    'write_heavy_latency': ['avg<500'],
+    'response_time': ['p(95)<500'], // 95% запросов должны быть быстрее 500 мс
+    'failure_rate': ['rate<0.1'],   // Менее 10% запросов должны завершаться неудачей
   }
 };
 
@@ -135,4 +154,17 @@ export function mixedTraffic() {
 
 export function teardown() {
   writer.close();
+}
+
+export default function() {
+  const start = Date.now();
+  const response = http.get(`${SERVICE_URL}/tours`);
+  
+  // Записываем время отклика
+  responseTime.add(Date.now() - start);
+  
+  // Записываем процент неудачных запросов
+  failureRate.add(response.status !== 200);
+  
+  sleep(1);
 }

@@ -4,7 +4,7 @@ import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import { Trend, Rate } from 'k6/metrics';
 import { Writer, SCHEMA_TYPE_STRING, SchemaRegistry } from 'k6/x/kafka';
 
-// Kafka setup
+// Настройка Kafka
 const writer = new Writer({
     brokers: ["hl22.zil:9094", "hl23.zil:9094"],
     topic: "museum-topic",
@@ -16,13 +16,12 @@ const TARGET_VUS = 600;
 const BASE_URL = 'http://10.60.3.13:30000';
 const SERVICE_URL = 'http://10.60.3.13:30001';
 
-const readHeavyLatency = new Trend('read_heavy_latency');
-const balancedLatency = new Trend('balanced_latency');
-const writeHeavyLatency = new Trend('write_heavy_latency');
-
-// Метрики для времени отклика и процента неудачных запросов
-const responseTime = new Trend('response_time');
-const failureRate = new Rate('failure_rate');
+// Метрики для измерения производительности
+const readHeavyLatency = new Trend('read_heavy_latency'); // Время отклика при преобладании операций чтения (95% чтение, 5% запись)
+const balancedLatency = new Trend('balanced_latency'); // Время отклика при равном соотношении операций (50% чтение, 50% запись)
+const writeHeavyLatency = new Trend('write_heavy_latency'); // Время отклика при преобладании операций записи (5% чтение, 95% запись)
+const responseTime = new Trend('response_time'); // Время отклика при тестировании Circuit Breaker
+const failureRate = new Rate('failure_rate'); // Процент запросов, завершившихся с ошибкой
 
 const scenarios = {
   read_heavy: {
@@ -45,6 +44,12 @@ const scenarios = {
     duration: '1m',
     target: TARGET_VUS,
     metric: writeHeavyLatency
+  },
+  circuit_breaker: {
+    name: 'Circuit Breaker Test',
+    duration: '5m',
+    target: 100,
+    metric: responseTime
   }
 };
 
@@ -87,34 +92,35 @@ export const options = {
         { duration: '3m', target: 100 }, // Поддержание нагрузки
         { duration: '1m', target: 0 },   // Снижение нагрузки
       ],
-    },
+      exec: 'circuitBreakerTest',
+    }
   },
   thresholds: {
-    'read_heavy_latency': ['avg<500'],
-    'balanced_latency': ['avg<500'],
-    'write_heavy_latency': ['avg<500'],
+    'read_heavy_latency': ['avg<500'], // Среднее время отклика должно быть меньше 500 мс
+    'balanced_latency': ['avg<500'], // Среднее время отклика должно быть меньше 500 мс
+    'write_heavy_latency': ['avg<500'], // Среднее время отклика должно быть меньше 500 мс
     'response_time': ['p(95)<500'], // 95% запросов должны быть быстрее 500 мс
-    'failure_rate': ['rate<0.1'],   // Менее 10% запросов должны завершаться неудачей
+    'failure_rate': ['rate<0.1'], // Менее 10% запросов должны завершаться неудачей
   }
 };
 
 function generateVisitor() {
     const ticketTypes = ['DISCOUNT', 'FULL'];
-  
+
     return {
       fullName: `USER${randomIntBetween(10000, 99999)}`,  // Генерация уникального имени
       age: randomIntBetween(18, 90),                      // Генерация случайного возраста
       ticketType: ticketTypes[randomIntBetween(0, 1)],    // Случайный выбор между 'DISCOUNT' и 'FULL'
     };
   }
-  
+
   function sendVisitorToKafka(visitorData) {
       const message = {
           entity: "VISITOR",
           operation: "POST",
           payload: visitorData
       };
-  
+
       try {
           writer.produce({
               topic: "museum-topic",  // Топик для сообщений
@@ -129,22 +135,22 @@ function generateVisitor() {
                   }),
               }],
           });
-  
+
       } catch (error) {
           console.error("❌ Failed to send message to Kafka:", error);
       }
   }
-  
+
   export function mixedTraffic() {
     const scenario = scenarios[__ENV.TEST_SCENARIO];
     const random = Math.random();
     let res;
-  
+
     if (random < scenario.read_ratio) {
       // Генерация случайного года и месяца для GET-запроса
       const year = randomIntBetween(2024, 2025);
       const month = randomIntBetween(1, 12);
-  
+
       // Формируем запрос с параметрами года и месяца
       res = http.get(`${SERVICE_URL}/api/statistics/exhibit-rating?year=${year}&month=${month}`);
     } else {
@@ -153,23 +159,21 @@ function generateVisitor() {
       sendVisitorToKafka(visitor);
       res = { timings: { duration: 100 } }; // Default duration for Kafka operations
     }
-  
+
     scenario.metric.add(res.timings.duration);
-  
-    // Запись метрик
-    responseTime.add(res.timings.duration);
-    failureRate.add(res.status !== 200);
-  
+
     sleep(0.1);
   }
-  
-  export default function () {
-    const res = http.get('http://main-service-internal:8080/crash');
+
+  export function circuitBreakerTest() {
+    const start = Date.now();
+    const response = http.get(`${SERVICE_URL}/api/statistics/exhibit-rating?year=2024&month=1`);
     
-    // Запись метрик
-    responseTime.add(res.timings.duration);
-    failureRate.add(res.status !== 200);
-  
+    // Записываем время отклика
+    responseTime.add(Date.now() - start);
+    
+    // Записываем процент неудачных запросов
+    failureRate.add(response.status !== 200);
+    
     sleep(1);
   }
-  

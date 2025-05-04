@@ -56,6 +56,6 @@ statistics:
     info: "Cache Statistics"
     delay: 1000
     print:
-      rate: 0
+      rate: 0 
   monitor:
     interval: 5000 
