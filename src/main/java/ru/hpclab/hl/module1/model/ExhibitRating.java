@@ -11,3 +11,4 @@ public class ExhibitRating {
     private Long exhibitId;
     private Long visitCount;
 } 
+
