@@ -45,5 +45,13 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "1"
+        readinessProbe:
+          httpGet:
+            path: /core/health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
       imagePullSecrets:
       - name: dockerhub-secret

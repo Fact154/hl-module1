@@ -2,16 +2,19 @@ package ru.hpclab.hl.module1.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.DescribeClusterOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/api/core")
+@RequestMapping("/core")
 public class HealthController {
 
     private static final Logger log = LoggerFactory.getLogger(HealthController.class);
@@ -35,15 +38,26 @@ public class HealthController {
         }
     }
 
+    @PostMapping("/crash")
+    public void crash() {
+        log.info("Crash endpoint called - simulating service crash");
+        System.exit(1);
+    }
+
     private boolean checkKafkaConnection() {
         try {
             if (kafkaAdmin == null) {
                 log.error("KafkaAdmin is not initialized");
                 return false;
             }
-            kafkaAdmin.describeCluster().nodes().get(3, TimeUnit.SECONDS);
-            log.info("Kafka connection is healthy");
-            return true;
+            
+            try (AdminClient adminClient = AdminClient.create(kafkaAdmin.getConfigurationProperties())) {
+                adminClient.describeCluster(new DescribeClusterOptions().timeoutMs(3000))
+                    .nodes()
+                    .get(3, TimeUnit.SECONDS);
+                log.info("Kafka connection is healthy");
+                return true;
+            }
         } catch (Exception e) {
             log.error("Kafka healthcheck failed", e);
             return false;
@@ -61,4 +75,4 @@ public class HealthController {
             return false;
         }
     }
-}
+} 

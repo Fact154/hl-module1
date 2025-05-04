@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import ru.hpclab.hl.module1.DTO.KafkaMessage;
+import ru.hpclab.hl.module1.model.KafkaMessage;
 import ru.hpclab.hl.module1.model.Visitor;
 import ru.hpclab.hl.module1.model.Exhibit;
 import ru.hpclab.hl.module1.model.Tour;
