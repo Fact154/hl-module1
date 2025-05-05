@@ -1,10 +1,7 @@
 package ru.hpclab.hl.module1.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -15,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/core")
+@ControllerAdvice
 public class HealthController {
 
     private static final Logger log = LoggerFactory.getLogger(HealthController.class);
@@ -24,6 +22,12 @@ public class HealthController {
     public HealthController(KafkaAdmin kafkaAdmin, JdbcTemplate jdbcTemplate) {
         this.kafkaAdmin = kafkaAdmin;
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception e) {
+        log.error("Error occurred: ", e);
+        return ResponseEntity.status(503).body("Service temporarily unavailable");
     }
 
     @GetMapping("/health")
@@ -40,8 +44,8 @@ public class HealthController {
 
     @PostMapping("/crash")
     public void crash() {
-        log.info("Crash endpoint called - simulating service crash");
-        System.exit(1);
+        log.info("Crash endpoint called - throwing exception instead of system exit");
+        throw new RuntimeException("Simulated service crash");
     }
 
     private boolean checkKafkaConnection() {

@@ -17,12 +17,11 @@ public class KillerService {
         this.webClient = webClientBuilder.baseUrl("http://main-service-internal:8080").build();
     }
 
-    @Scheduled(fixedRate = 10000)
     @CircuitBreaker(name = "coreServiceCircuitBreaker", fallbackMethod = "fallback")
     public void killRandomPod() {
         try {
             log.info("Attempting to crash a random pod");
-            webClient.get()
+            webClient.post()
                     .uri("/crash")
                     .retrieve()
                     .bodyToMono(Void.class)
