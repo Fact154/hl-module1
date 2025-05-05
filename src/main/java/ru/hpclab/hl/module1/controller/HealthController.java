@@ -62,16 +62,6 @@ public class HealthController {
 
     @PostMapping("/crash")
     public ResponseEntity<String> crash() {
-        // Проверяем, что под полностью готов
-        boolean isKafkaAlive = checkKafkaConnection();
-        boolean isDbAlive = checkDbConnection();
-
-        if (!isKafkaAlive || !isDbAlive) {
-            log.warn("Pod is not ready yet, cannot crash. Kafka: {}, DB: {}", isKafkaAlive, isDbAlive);
-            return ResponseEntity.status(503)
-                    .body("Pod is not ready yet. Please wait for full initialization.");
-        }
-
         String currentPod = System.getenv("HOSTNAME");
         log.info("Crash endpoint called - initiating pod crash for pod: {}", currentPod);
         
