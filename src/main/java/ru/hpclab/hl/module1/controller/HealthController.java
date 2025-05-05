@@ -53,8 +53,19 @@ public class HealthController {
 
     @PostMapping("/crash")
     public ResponseEntity<String> crash() {
-        log.info("Crash endpoint called - throwing exception instead of system exit");
-        throw new RuntimeException("Simulated service crash");
+        log.info("Crash endpoint called - initiating pod crash");
+        // Возвращаем 200 OK перед крашем
+        ResponseEntity<String> response = ResponseEntity.ok("Service crash initiated");
+        // Запускаем краш в отдельном потоке, чтобы успеть отправить ответ
+        new Thread(() -> {
+            try {
+                Thread.sleep(100); // Даем время на отправку ответа
+                System.exit(1);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }).start();
+        return response;
     }
 
     private boolean checkKafkaConnection() {
