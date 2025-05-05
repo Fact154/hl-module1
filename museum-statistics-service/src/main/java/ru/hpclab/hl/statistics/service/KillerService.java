@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -42,7 +41,6 @@ public class KillerService {
                 .build();
     }
 
-    @Scheduled(fixedRate = 10000) // каждые 10 секунд
     @CircuitBreaker(name = "coreServiceCircuitBreaker", fallbackMethod = "fallback")
     public void killRandomPod() {
         try {
