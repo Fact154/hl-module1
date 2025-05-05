@@ -40,7 +40,16 @@ public class HealthController {
     }
 
     @GetMapping("/health")
-    public ResponseEntity<String> healthCheck() {
+    public ResponseEntity<String> healthCheck(@RequestHeader(value = "X-Target-Pod", required = false) String targetPod) {
+        // Получаем имя текущего пода из переменной окружения
+        String currentPod = System.getenv("HOSTNAME");
+        
+        // Если это не целевой под, просто возвращаем 503
+        if (targetPod != null && !targetPod.equals(currentPod)) {
+            log.info("This pod ({}) is not the target ({}) for health check", currentPod, targetPod);
+            return ResponseEntity.status(503).body("Not the target pod");
+        }
+
         boolean isKafkaAlive = checkKafkaConnection();
         boolean isDbAlive = checkDbConnection();
 
@@ -52,8 +61,27 @@ public class HealthController {
     }
 
     @PostMapping("/crash")
-    public ResponseEntity<String> crash() {
-        log.info("Crash endpoint called - initiating pod crash");
+    public ResponseEntity<String> crash(@RequestHeader(value = "X-Target-Pod", required = false) String targetPod) {
+        // Проверяем, что под полностью готов
+        boolean isKafkaAlive = checkKafkaConnection();
+        boolean isDbAlive = checkDbConnection();
+
+        if (!isKafkaAlive || !isDbAlive) {
+            log.warn("Pod is not ready yet, cannot crash. Kafka: {}, DB: {}", isKafkaAlive, isDbAlive);
+            return ResponseEntity.status(503)
+                    .body("Pod is not ready yet. Please wait for full initialization.");
+        }
+
+        // Получаем имя текущего пода из переменной окружения
+        String currentPod = System.getenv("HOSTNAME");
+        
+        // Если это не целевой под, просто возвращаем 200 OK
+        if (targetPod != null && !targetPod.equals(currentPod)) {
+            log.info("This pod ({}) is not the target ({}) for crash", currentPod, targetPod);
+            return ResponseEntity.ok("Not the target pod");
+        }
+
+        log.info("Crash endpoint called - initiating pod crash for pod: {}", currentPod);
         // Возвращаем 200 OK перед крашем
         ResponseEntity<String> response = ResponseEntity.ok("Service crash initiated");
         // Запускаем краш в отдельном потоке, чтобы успеть отправить ответ
