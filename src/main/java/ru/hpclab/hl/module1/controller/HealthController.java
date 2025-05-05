@@ -30,6 +30,15 @@ public class HealthController {
         return ResponseEntity.status(503).body("Service temporarily unavailable");
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleCrashException(RuntimeException e) {
+        if (e.getMessage().equals("Simulated service crash")) {
+            log.info("Service crash simulated successfully");
+            return ResponseEntity.ok("Service crash initiated");
+        }
+        return handleException(e);
+    }
+
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
         boolean isKafkaAlive = checkKafkaConnection();
@@ -43,7 +52,7 @@ public class HealthController {
     }
 
     @PostMapping("/crash")
-    public void crash() {
+    public ResponseEntity<String> crash() {
         log.info("Crash endpoint called - throwing exception instead of system exit");
         throw new RuntimeException("Simulated service crash");
     }
