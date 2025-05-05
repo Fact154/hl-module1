@@ -61,7 +61,7 @@ public class HealthController {
     }
 
     @PostMapping("/crash")
-    public ResponseEntity<String> crash(@RequestHeader(value = "X-Target-Pod", required = false) String targetPod) {
+    public ResponseEntity<String> crash() {
         // Проверяем, что под полностью готов
         boolean isKafkaAlive = checkKafkaConnection();
         boolean isDbAlive = checkDbConnection();
@@ -72,16 +72,9 @@ public class HealthController {
                     .body("Pod is not ready yet. Please wait for full initialization.");
         }
 
-        // Получаем имя текущего пода из переменной окружения
         String currentPod = System.getenv("HOSTNAME");
-        
-        // Если это не целевой под, просто возвращаем 200 OK
-        if (targetPod != null && !targetPod.equals(currentPod)) {
-            log.info("This pod ({}) is not the target ({}) for crash", currentPod, targetPod);
-            return ResponseEntity.ok("Not the target pod");
-        }
-
         log.info("Crash endpoint called - initiating pod crash for pod: {}", currentPod);
+        
         // Возвращаем 200 OK перед крашем
         ResponseEntity<String> response = ResponseEntity.ok("Service crash initiated");
         // Запускаем краш в отдельном потоке, чтобы успеть отправить ответ
